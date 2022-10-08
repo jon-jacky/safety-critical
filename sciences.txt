@@ -1,0 +1,7 @@
+@article{jacky89b,
+        author = "Jonathan Jacky",
+        title = "Programmed for Disaster: Software Errors that Imperil
+                Lives",
+        Journal = "The Sciences",
+        volume = 29, number = 5,
+        year = 1989, note = "September/October", pages = "22--27"}

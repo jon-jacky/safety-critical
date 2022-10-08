@@ -1,0 +1,180 @@
+<html>
+<head>
+<title>Solutions to In-Class Exercises</title>
+</head>
+
+<body>
+
+<h2>Solutions to In-Class Exercises</h2>
+
+<p>
+Here are my solutions to the in-class exercises posed in the handout,
+<a href="inv.html">State-based safety analysis</a>.
+</p>
+
+<p>
+<b>Exercise:</b> Why did we not include another state variable to 
+represent the mode (X-ray or electron)?
+</p>
+
+<p>
+Because it would be redundant.  The three state variables we already
+have provide sufficient information to determine the mode.  Moreover,
+there are states don't belong to either mode, so if we had a mode
+variable we would need one (or more) values to indicate that.
+But this was a judgment call - sometimes it is thought to be useful
+to include redundant variables as a kind of documentation.
+</p>
+
+<p>
+<b>Exercise:</b> Here is another state function for this system.  How
+many distinct states does it describe?  What are they?
+</p>
+
+<pre>
+    boolean electron_mode(void) {
+        return (current == low && target == out);
+    }
+</pre>
+
+<p>
+It describes two distinct states, where the variables <em>not</em>
+mentioned in the state function take on all possible values:
+</p>
+
+<pre>
+   current == low && target == out && beam == off
+   current == low && target == out && beam == on
+</pre>
+
+<p>
+<b>Exercise:</b>  Write the <code>xray_mode</code> state function.
+</p>
+
+<pre>
+    boolean xray_mode(void) {
+        return (current == high && target == in);
+    }
+</pre>
+
+<b>Exercise:</b> Write the <code>select_xray_mode</code> transition.
+
+<pre>
+    void select_xray_mode(void) {
+         if (beam == off) {
+             current = high; target = in;
+         }
+    }
+</pre>
+
+<p>
+Note that after <code>select_xray_mode</code> occurs, <code>xray_mode</code>
+is true.
+</p>
+
+<p>
+<b>Exercise:</b> Write the safety invariant
+<code>safe_mode</code>.  
+
+<p>
+The natural language requirements say, "The electron accelerator is
+unsafe if the beam is on while the current is high but the target is
+out."  Translating this to a boolean expression, we get:
+</p>
+
+<pre>
+    beam == on && current == high && target == out
+</pre>
+
+<p>
+That's the unsafe state.  To get the safe states, we negate this and
+apply DeMorgan's law:
+</p>
+
+<pre>
+    boolean safe_mode(void) {
+        return (beam == off || current == low || target == in);
+    }
+</pre>
+
+<p>
+This answer includes all the safe states.  If you use intuition and
+the modes defined previously, you might propose <code>beam == off ||
+electron_mode || xray_mode</code>.  This is not quite the same because
+it excludes the useless but safe state <code>beam == on && current ==
+low && target == in</code>.  Just <code>electron_mode ||
+xray_mode</code> is simplest but it excludes even more states.
+All three answers are reasonable, however.
+</p>
+
+<p>
+<b>Exercise:</b> (After we add the <code>beam_on</code> and
+<code>beam_off</code> transitions) Does this system satisfy its safety
+invariant?  Why?
+</p>
+
+<p>
+Yes, because every transition we have defined leaves the system 
+in <code>electron_mode</code> or <code>xray_mode</code>, which 
+are in both <code>safe_mode</code>.
+</p>
+
+<p>
+<b>Exercise:</b> (After we add <code>target_in</code> and
+<code>target_out</code>)  Does the system satisfy the invariant now?
+Why?
+</p>
+
+<p>
+No, because <code>target_out</code> can occur when <code>beam_off &&
+xray_mode</code>, then <code>beam_on</code> can occur.  That results
+in the unsafe state <code>beam == on && current == high && target ==
+out</code>.
+</p>
+
+<p>
+<b>Exercise:</b> (Regarding automatic analysis) Would this be possible
+for our example?  Is it possible in general?
+</p>
+
+<p>
+It would be possible for our example because there are few enough states
+and transitions that a program can examine all possible transitions from 
+all possible states.  But if the number of states and transitions is 
+large, this is not feasible.
+</p>
+
+<hr>
+
+<p>
+We ran out of time so I didn't have time to explain that there are
+whole technologies devoted to writing and analyzing models like this.
+They are examples of <a href="http://www.afm.sbu.ac.uk/">formal
+methods</a>.  They include the modelling notations 
+<a href="http://sdg.lcs.mit.edu/alloy/">Alloy</a>, 
+<a href="http://research.microsoft.com/fse/#AsmL">ASM</a>,
+<a href="http://www.research.compaq.com/SRC/tla/">TLA</a>, 
+<a href="http://www.cs.utexas.edu/users/psp/welcome.html#unitysec">Unity</a>, 
+<a href="http://www.csr.ncl.ac.uk/vdm/">VDM</a>, 
+and
+<a href="http://www.afm.sbu.ac.uk/z/">Z</a>
+(also <a href="http://www.radonc.washington.edu/prostaff/jon/z/z-examples.html">here</a>),
+the theorem provers 
+<a href="http://www.cs.utexas.edu/users/moore/acl2/">ACL2</a>, 
+<a href="http://pvs.csl.sri.com/">PVS</a>, 
+and
+<a href="http://www.ora.on.ca/z-eves/">Z/EVES</a>, 
+and the model-checkers
+<a href="http://www.cs.cmu.edu/~modelcheck/">SMV</a>, 
+<a href="http://cm.bell-labs.com/cm/cs/what/spin/">Spin</a>, 
+and 
+<a href="http://sdg.lcs.mit.edu/alloy/">Alloy</a>
+again.
+</p>
+
+<hr>
+
+<a href="index.html">Jonathan Jacky</a>, <em class="email">jon@u.washington.edu</em>
+
+</body>
+</html>

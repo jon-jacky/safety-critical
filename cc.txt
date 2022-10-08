@@ -1,0 +1,24 @@
+@incollection{jacky96a,
+        author = "Jonathan Jacky",
+        title = "Safety-critical Computing: Hazards, Practices,
+                Standards, and Regulation",
+        editor = "Rob Kling",
+        booktitle = "Computerization and Controversy:
+                        Value Conflicts and Social Choices",
+        publisher = "Academic Press",
+	pages="767-792",
+        note = "(second edition)",
+        year = 1996}
+                        
+An earlier version appeared in the first edition:
+
+@incollection{jacky91d,
+        author="Jonathan Jacky",
+        title="Safety-critical Computing: Hazards, Practices,
+                Standards, and Regulation",
+        editor="Charles Dunlop and Rob Kling",
+        booktitle="Computerization and Controversy:
+                        Value Conflicts and Social Choices",
+        publisher="Academic Press",
+	pages="612--631",
+        year=1991}   

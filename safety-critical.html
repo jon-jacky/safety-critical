@@ -1,0 +1,1725 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<TITLE>Safety-Critical Computing</TITLE>
+<META NAME="generator" CONTENT="txt2html v1.28">
+</HEAD>
+<BODY>
+
+
+<h2>
+Safety-Critical Computing: Hazards, Practices, Standards, and Regulation 
+</h2>
+<h2>Jonathan Jacky</h2>
+
+<p>
+<a href="safety-abstract.html">Abstract</a>
+</p>
+
+<p>
+A version of this report was published as a <a href="cc.txt">book chapter</a>.
+A shorter version appeared as a 
+<a href="sciences.txt">magazine article</a>.
+The bracketed numbers like this [1] in the body of the text
+are citations to the <a href="#ref">references</a> at the end of the report.
+Here are some recent <a href="#updates">updates</a>.
+</p>
+
+<hr>
+
+<h3>Contents</h3>
+
+<p>
+<a href="#horror">A Horror Story</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#how">How Did It Happen?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#why">Why Did It Happen?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#product">Other Problems with the Product</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#vendor">Problems with the Vendor</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#customer">Problems with the Customers</a><br>
+<a href="#apps">Safety-Critical Applications</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#medicine">Medicine</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#aviation">Aviation</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#transport">Trains and Automobiles</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#power">Power</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#weapons">Weapons</a><br>
+<a href="#errors">Software Errors Are a Serious Problem</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#programming">How Programs Are Written</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#detection">How Errors Are Detected</a><br>
+<a href="#better">Building Better Computer-Controlled Systems</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#safety">Safety Engineering</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#softeng">Software Engineering</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#fm">Formal Methods</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#regulation">Certification and Regulation</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#liability">Liability and Criminal Penalties</a><br>
+<a href="#conclusion">Conclusion</a><br>
+<a href="#ref">References</a><br>
+</p>
+
+<hr>
+
+<h3><a name="horror">A Horror Story</a></h3>
+
+<P>
+On March 21, 1986, oilfield worker Ray Cox visited a clinic in
+Tyler, Texas, to receive his radiation treatment. Cox knew
+from his previous visits that the procedure should be
+painless--but that day, he felt a jolt of searing heat. Outside
+the shielded treatment room, the therapy technologist was
+puzzled. The computer terminal used to operate the radiation
+machine displayed the cryptic message, "Malfunction 54,"
+indicating the incorrect dose had been delivered. Clinic staff
+were unable to find anything wrong with the machine, so they
+sent Cox home and continued treating other patients. 
+
+<P>
+But
+Cox's condition worsened. Spitting blood, he checked into a
+hospital emergency room. Clinic staff suspected Cox had
+received an electrical shock, but specialists were unable to
+locate any hazard. Less than a month later, malfunction 54
+occurred again--this time striking Verdon Kidd, a 66-year-old
+bus driver. Kidd died in May, reportedly the first fatality ever
+caused by an overdose during a radiation treatment.
+Meanwhile, Cox became paralyzed and lapsed into a coma. He
+died in a Dallas hospital in September 1986. 
+
+<P>
+As news of the Tyler incidents spread, reports of other accidents
+surfaced. A patient in Canada, another in Georgia, and a third in
+Washington state had received mutilating injuries in 1985. Another
+overdose occurred in Washington state in January 1987. All victims had
+been treated with the Therac-25, a computer-controlled radiation
+machine called a linear accelerator manufactured by Atomic Energy of
+Canada, Ltd (AECL). Physicist Fritz Hager and therapy technologists at
+the Tyler clinic discovered that the accidents were caused by errors
+in the computer programs that controlled the Therac-25. Cox and Kidd
+had been killed by software [1, 2, 3, 4, 5].
+
+<P>
+The Therac accidents were reported in
+the national press [6, 7] and featured in People magazine [8] and 
+the television news
+program 20/20 [9]. Journalist Edward Joyce learned that
+different problems with the Therac-25 and its predecessor, the
+Therac-20, had been turning up for years prior to the Tyler
+accidents but were not widely known [3, 10, 11, 12]. Injured
+patients had been largely ignored and machines kept in use.
+Fixes requested by the Canadian government in the wake of
+one accident had never been installed [3]. After the Tyler
+clinic staff explained the cause of the problems, Therac-25s
+were not withdrawn from service; instead, warnings were
+circulated and a makeshift temporary fix was recommended
+[13]--which proved unable to prevent another accident [4]. 
+
+<P>
+After the fifth accident, clinics using the Therac-25 were
+advised--but not ordered--to discontinue routine use until a set
+of fixes approved by the Food and Drug Administration
+(FDA) was installed. The major effect of these fixes was to
+provide traditional safety features that would function
+independently of the computer [14]. By that time, the Tyler
+clinic had vowed never to use the Therac-25 again and was
+attempting to obtain a refund from AECL [11]. AECL stopped
+selling therapy machines in 1985, citing competitive pressure
+and poor sales [2]. 
+
+<P>
+The accidents showed that
+computer-controlled equipment could be less safe than the
+old-fashioned equipment it was intended to replace. Hospitals
+and patients had assumed that manufacturers developed new
+products carefully, and that any remaining defects would be
+spotted by the FDA. The Therac incidents revealed that
+computer system safety had been overlooked by vendors and
+regulators alike. Software that controlled devices critical to
+human safety was being developed in a haphazard,
+unsystematic fashion, and receiving little meaningful review
+from regulatory agencies --- who had little experience with the
+new equipment and meager resources to deal with it in any
+case. The never-ending "software crisis" [15, 16, 17] --- the
+unexpected difficulty and expense of creating high-quality
+software --- had finally caught up with the medical equipment
+industry. But here, instead of merely causing frustration or
+financial loss, errors could kill. 
+
+<P>
+Using computers to control
+hazardous machinery raises difficult questions. Some are
+specific to computing: Why use computers at all, if satisfactory
+techniques already exist? Do computers introduce new kinds
+of problems unlike those encountered in traditional control
+systems? What techniques exist now for creating safe and
+reliable computer-controlled systems, and could they be
+improved? Other questions are perennial for society at large
+but are only now beginning to be considered in the computing
+field: How are we to decide whether a product is safe enough
+to place on the market? How can we ensure that product
+developers and service providers are competent and that poor
+practices are discouraged? Who is held responsible when
+systems fail and people get killed? 
+
+<h4><a name="how">How Did It Happen?</a></h4>
+
+<P>
+It is useful to explain how the Therac accidents happened, to
+show how seemingly trivial mistakes can have terrible
+consequences. 
+
+<P>
+When the accidents occurred, radiation therapy
+had become a routine, safe and frequently effective procedure,
+used on almost 450,000 patients each year in over 1,100 clinics
+in the United States [18]. Much of the success was due to the
+convenience and therapeutic properties of linear accelerators,
+which began to replace cobalt units in the 1960s [19, 20]. The
+million-dollar Therac-25, introduced in 1982 [3, 10], was
+thought to be among the best available and was one of the
+first of a new generation of computer-controlled machines.
+The traditional operator's control panel, festooned with
+switches, buttons and lamps, was replaced by a computer video
+display terminal, and much of the internal control electronics
+was replaced by a computer. This was intended to make
+operation more convenient, improve the accuracy of
+treatments, and decrease the time needed to treat each patient
+[20]. A particular innovation of the Therac-25 was to use the
+computer to perform many of the safety functions traditionally
+allocated to independent, or hard-wired, electromechanical
+circuits called interlocks [10]. 
+
+<P>
+Control systems have traditionally
+used physical forces transmitted by the motions of wheels,
+levers, cables, fluids or electric current to transmit the will of a
+human operator to the controlled devices. Through a more or
+less indirect chain, the operator's hands and feet were
+physically connected to the machinery that did the work. 
+
+<P>
+The
+computer changed all that. Today, it is necessary to transmit
+only information, not force. Instead of designing a complex
+control system that depends on meshing cogs, fluid flow or
+electric current to transform the operator's commands, the
+designer can plug in a standard computer--perhaps a
+microprocessor costing only a few dollars. The operator's
+commands are mediated by software--lists of instructions that
+tell the computer what to do. 
+
+<P>
+The proper operation of a
+traditional control system largely depended on the physical
+soundness of the control mechanism. When it failed, it was
+usually because some part broke or wore out: teeth broke off
+gears, tubes burned out, hydraulic fluid leaked away. These
+failures were usually caused by manufacturing defects or wear
+and could be prevented by inspecting the product and
+replacing defective parts. 
+
+<P>
+Computer hardware can also break
+or wear out, but many computer failures are not so easy to
+understand. They are design failures, caused by logical
+unsoundness in the control mechanism. There is no material
+defect that can be discovered by inspection. As one aircraft
+accident investigator ruefully noted, "Malfunctioning electrons
+will not be found in the wreckage" [21]. 
+
+<P>
+Some design failures
+are in the hardware--the computer chips themselves. A design
+error caused parts from early production runs of the popular
+Intel 80386 microprocessor, introduced in August 1986, to
+compute the wrong answer when multiplying certain
+combinations of numbers. The flaw was not discovered until
+over 100,000 units had been sold [22]. But design errors in
+mass-produced computer hardware are unusual. More
+frequently, design errors occur in the software: the instructions
+provided to the computer are wrong. 
+
+<P>
+A software error killed Cox and Kidd. It involved the
+apparently straightforward operation of switching the machine
+between two operating modes. Linear accelerators, including
+the Therac-25, can produce two kinds of radiation beams:
+electron beams and X-rays. Patients are treated with both
+kinds. First, an electron beam is generated. It may irradiate
+the patient directly; alternatively, an X-ray beam can be
+created by placing a metal target into the electron beam: as
+electrons are absorbed in the target, X-rays emerge from the
+other side. However, the efficiency of this X-ray-producing
+process is very poor, so the intensity of the electron beam has
+to be massively increased when the target is in place. The
+electron beam intensity in X-ray mode can be over 100 times
+as great as during an electron beam treatment. 
+
+<P>
+There is great
+danger that the electron beam might attain its higher intensity
+with the X-ray target absent, and be driven directly into a
+patient. This hazard has been well understood for more than
+twenty years. Three patients were overdosed in one day at
+Hammersmith Hospital in London in 1966, when the
+(noncomputer) controls in one of the earliest linear accelerators 
+failed [23, 24]. 
+
+<P>
+In most of today's accelerators, hard-wired 
+electromechanical interlocks ensure that high electron beam intensity 
+cannot be attained unless the X-ray target is in place. In the Therac-
+25, however, both target position and beam intensity were controlled 
+solely by the computer. When the operator switched the machine from Xray 
+to electron mode, the computer was supposed to withdraw the target 
+and set the beam to low intensity. 
+
+<P>
+Usually it worked that way. At 
+Tyler, more than 500 patients had been treated without mishap in the 
+two years preceding the accidents [2]. However, if the operator 
+selected X-rays by mistake, realized her error, and then selected 
+electrons--all within 8 seconds [1, 13]--the target was withdrawn but the 
+full-intensity beam was turned on. This error--trivial to commit--
+killed Cox and Kidd. Measurements at Tyler by physicist Fritz Hager, in 
+which he reproduced the accident using a model of a patient called a 
+"phantom," indicated that Kidd received a dose of about 25,000 rads--
+more than 100 times the prescribed dose [1, 2, 5]. 
+
+<P>
+After the Tyler staff 
+explained the mechanism of the accident, AECL recommended a makeshift 
+fix: to make it difficult for the technologist to change the beam type 
+from X-rays to electrons, remove the keycap from the "up-arrow" key and 
+cover it with electrical tape [1, 5]. The FDA concurred that "the interim 
+disabling of the edit mode, in combination with user adherence to 
+operating instructions, will prevent similar mishaps" [13]. 
+
+<P>
+But the FDA was mistaken. Another accident occurred in Yakima in
+Washington state in 1987, caused by a different error that also
+involved moveable elements in the treatment head [1, 4].  (Leveson and
+Turner provide a more detailed technical description of the accidents
+in reference [1]). 
+
+<h4><a name="why">Why Did It Happen?</a></h4>
+
+<P>
+How was it possible that these accidents could occur--not once,
+but at least five times? Much of the blame lies with the
+product and the vendor, but the hazard was exacerbated by
+problems with the customers. 
+
+<h5><a name="product">Other Problems with the Product</a></h5>
+
+<P>
+The problems with the X-ray target were the immediate cause
+of the accidents. But those were exacerbated by a poor "user
+interface" that encouraged technologists to operate the
+machine in a hazardous fashion. According to a therapist at
+the site of the Georgia accident, the Therac-25 often issued up
+to 40 diagnostic messages a day, indicating something was wrong with
+the machine.  Most of these messages simply
+indicated that the beam intensity was slightly less than
+expected, due to the machine being "out of tune." It was
+possible to cancel the message and proceed with treatments by
+pressing the "P" key, and operators quickly learned to respond
+this way to almost any diagnostic message--which were hard to tell
+apart, since they were numerical codes rather than English
+text. 
+
+<P>
+Unfortunately, it was also possible to proceed in the same
+casual way after serious faults with safety implications. After
+an accident in Ontario in 1985, a report by Gordon Symonds
+of the Canadian Bureau of Radiation and Medical devices
+criticized this feature. However, the changes it
+requested--which would have required a more elaborate
+recovery procedure after safety-related diagnostics--were never
+made. The consequences were grave. In Tyler, the only
+indication of trouble that the operators saw was the cryptic
+message, "Malfunction 54." They repeatedly pushed "P" and
+turned the beam on again and again, dosing Ray Cox three
+times [3] (investigators concluded that the first dose alone was
+fatal). 
+
+<h5><a name="vendor">Problems with the Vendor</a></h5>
+
+<P>
+AECL allowed a very hazardous product to reach the market.
+The central problem was not that some individual made a
+couple of mistakes while writing the computer code that
+handled the X-ray target. That was inevitable; the best
+programmers make lots of mistakes. The real problem was that
+AECL failed as an organization; it was unable to protect its
+customers from the errors of one of its staff. 
+
+<P>
+Producing safe products requires a systematic approach to the
+whole development process. It has to involve several stages of
+review and evaluation by different people, backed by attention
+and commitment from those in authority. At AECL, this
+process must have broken down. It is to be expected that a few
+errors will slip through any review process (as we shall see,
+quite a few slip through most software quality assurance
+programs). However, a history of problems with the Therac
+series foreshadowed the fatal accidents and should have
+prompted a thorough reevaluation of its design. 
+
+<P>
+In June 1985 a
+massive assembly rotated spontaneously on the Therac-25 at
+the Albert Einstein Medical Center in Philadelphia. Had a
+patient been present at the time, he might have been crushed.
+The cause was a hardware failure: a diode had blown out on a
+circuit board. AECL redesigned the circuit so that failure of
+the diode could not, by itself, caused unintended movement
+[12]. Then in July 1985 a patient in Hamilton, Ontario was
+seriously overdosed. At that time the error was thought to
+derive from a hardware circuit; at the request of the Canadian
+government, AECL redesigned the circuit [3]. After he learned
+of the Tyler accidents in June 1986, physicist Frank Borger at
+the Michael Reese/University of Chicago Joint Center for
+Radiation Therapy discovered a similar problem with the
+X-ray target in the Therac-20. Consequences in the Therac-20
+were much less serious; fuses were blown, but hard-wired
+protective circuits prevented the beam from turning on [10]. In
+August 1986 technicians at a Mobile, Alabama clinic
+discovered a similar Therac-20 problem that could result in
+moderate overdoses. AECL had actually discovered the
+problem three years earlier and provided a fix (another
+microswitch), but somehow the retrofit had never been applied
+to some machines in the field [11]. 
+
+<P>
+This history suggests that
+AECL had no effective mechanism--which amounts to having
+no effective people in positions of real authority--responsible
+for ensuring the safety of the Therac product line. 
+
+<h5><a name="customer">Problems with the Customers</a></h5>
+
+<P>
+AECL sold a hazardous machine, but their customers also
+contributed to the accidents. Clinic staff discounted injured
+patients' complaints and kept using the machines. Tyler
+continued treating after Cox's injuries were apparent, and
+Kidd was killed in the next month. In June 1985 Katy
+Yarbrough was badly injured by the Therac-25 at a clinic in
+Marietta, Georgia. After the treatment, crying and trembling,
+she told the treatment technologist, "You burned me." "I'm
+sorry," the woman replied, "but that's not possible, it's just not
+possible." 
+
+<P>
+No signs of injury are apparent immediately after an
+overdose, but within days Yarbrough had a visible burn and
+was in excruciating pain. Her oncologist believed she was
+suffering muscle spasms and continued administering
+treatments. Eventually Yarbrough refused any more. She
+survived, but lost her breast and the use of one arm. The clinic
+continued treating others and did not report any problem to
+AECL or the FDA. They didn't realize what had happened to
+Yarbrough until news of the Tyler accidents reached them
+nearly a year later [6]. 
+
+<P>
+This misplaced faith in the technology
+could be the product of years of mishap-free experience with
+other machines. Moreover, the physical design of the
+Therac-25 beam-production apparatus was considered superb;
+referring to its dosimetric properties, physicist Alan Baker of
+Albert Einstein Medical Center in Philadephia, said "It's a
+wonderful machine, a physicist's delight" [12]. AECL even
+published a paper in a technical journal describing its radiation
+protection features--which concentrated exclusively on
+shielding against low-level hazards and did not even consider
+the X-ray target or the control system [25]. Furthermore,
+customers' intuition may have left them unprepared for a
+particularly diabolical characteristic of software errors: systems
+that perform most tasks correctly can fail catastrophically when
+attempting apparently similar tasks. Finally, there was
+unwarranted confidence in the kludgey keycap fix
+recommended by AECL--as if there were only one error to be
+guarded against. Programmers have learned that errors often
+come in clusters, and units with a history of buggy behavior
+continue to reveal new faults even as old ones are fixed [26].
+
+<P>
+There is a less innocent reason why clinics continued to use
+their machines after injuries and deaths occurred: they were
+driven by what accident researcher Charles Perrow calls
+production pressures. In his classic study of high-technology
+mishaps [27], Perrow describes how plant operators, under
+pressure to keep production lines running, will sometimes
+tolerate unsafe conditions--until an accident occurs. Today's
+cancer clinic is hardly less driven by economics than a power
+plant or chemical refinery; an idle clinic must still pay for the
+million-dollar machines and the staff that operate them. Pressures
+may be most acutely felt in the for-profit "free-standing"
+clinics that only provide radiation therapy, which have
+burgeoned in recent years and are actively competing with
+hospitals and with each other [18]. The FDA was sensitive to the
+clinics' plight. Asked after the fifth accident whether the FDA
+was considering a total ban, Edwin Miller of the Office of
+Compliance in the agency's Division of Radiological Products
+replied, "No such action is planned at this time. A complete
+ban would require an extensive study of risk assessment" [4]. 
+
+<P>
+Production pressures bear most heavily on the therapy
+technologists who actually administer the daily treatments
+(usually in the absence of a physician). The working world is
+largely divided between people whose job it is to track down
+problems and others who are supposed to get on with
+production.  Many technologists find themselves in the latter
+category, and can become inured to 40 dose rate faults a day,
+routinely pressing the "P" key rather than interrupting
+treatments for the hours or days required to get the machine
+back in tune. When Cox was hurt at Tyler, he was at first
+unable to communicate with the technologist outside the
+heavily shielded treatment room because the intercom and
+closed-circuit TV were not working that day [2, 5].
+
+<P>
+Some clinics resist the pressure. The Hamilton, Ontario, clinic kept
+its machine out of service for months following their accident,
+until the fault was positively identified and repaired [3].
+Recently, a prominent radiation therapy journal felt it
+necessary to remind readers, "Remove the patient from the
+treatment room as a first step when uncertainty in normal
+treatment unit operation occurs; err on the side of safety
+rather than staying on schedule" [28]. 
+
+<h3><a name="apps">Safety-Critical Applications</a></h3>
+
+<h4><a name="medicine">Medicine</a></h4>
+
+<P>
+Fortunately, only 11 Therac-25s had been installed when the
+hazards became known [2]. But the incidents raised concerns
+about computer-controlled therapy machines about to be
+introduced by several manufacturers, as well as other types of
+computer-controlled medical devices. The FDA estimated
+that by 1990, virtually all devices produced by the
+$11-billion-per-year medical electronics industry included
+embedded micro- or minicomputer [29]. The Therac accidents
+were only the worst examples of a trend that the FDA had
+been tracking for several years: computer-related problems in
+medical devices were on the increase. 
+
+<P>
+The evidence was in the
+FDA's "recall" database. The medical equipment industry
+recalls about 400 products a year. Not all recalls involve
+life-threatening problems, but each implies that the product
+has serious problems inherent in its design. Twice as many
+computer-related recalls occurred in 1984 as in 1982 or any
+prior year. Most computer-related recalls were caused by
+software errors [29]. There were 84 software-related recalls
+from 1983 through 1987.  Recalls continue to occur [30]. 
+Recalled devices included
+ultrasound units, patient monitors, blood analyzers,
+pacemakers, ventilators, and infusion pumps. A blood analyzer
+displayed incorrect values because addition, rather than
+subtraction, had been programmed into a calibration formula.
+A multiple-patient monitoring system mixed up patients'
+names with the wrong data. An infusion pump would
+continually infuse insulin if the operator entered "0" as the
+maximum value to be infused. Another pump would ignore
+settings of less than 1.0 milliliter per hour and deliver instead
+whatever the previous setting was, up to 700 milliliters per
+hour. If a certain command sequence was entered into one
+pacemaker programmer, the pacemaker would enter a random
+unpredictable state. In one ventilator, the patient disconnect
+alarm could fail to sound when needed, and the gas
+concentrations (like oxygen) could decrease without activation
+of an alarm or indication on the display. In many of these
+applications, as in the Therac incidents, failure of the control
+system could cause people to be killed.
+
+<h4><a name="aviation">Aviation</a></h4>
+
+<P>
+The Airbus Industries A320 airline attracted great press
+attention when it debuted in 1988 because it was the first commercial
+airliner to feature "fly-by-wire" controls--in which computers, rather
+than cables and hydraulics, connect the pilot's control stick to the
+elevator and other control surfaces [31, 32]. It was not so widely
+noted that other computers onboard the A320 are needed to turn on the
+cabin lights and even flush the toilets [33]!
+
+<P>
+Airbus' decision to use ``fly-by-wire'' was controversial.  Several
+software-related accidents accompanied the earlier introduction of
+"fly-by-wire" controls into military aircraft. A computer-controlled
+wing-mounted launcher retained its grip after its missile was ignited,
+creating what someone described as "the world's largest pinwheel" when
+the aircraft went violently out of control. An F-14 drove off the deck
+of an aircraft carrier on command from its computer-controlled
+throttle, and another jet crashed when its flight control program was
+confronted with an unanticipated mechanical problem [21].  Military
+fly-by-wire still presses the limits of the art.  In 1989 the first
+prototype of the Swedish JAS-39 Gripen fighter crashed during a test
+flight after it became unstable while under fly-by-wire control [34];
+another Gripen crashed after a similar mishap during an August 1993
+airshow in Stockholm, narrowly missing a bridge packed with spectators
+[35].
+
+<P>
+Airbus itself has suffered some accidents.  In its demonstration
+flight in June 1988 an A320 crashed into trees after a low-altitude
+flyby; the pilot claimed that the controls did not respond to his
+command to pull up [36]. In February 1990 another A320 crashed while
+on a landing approach to New Dehli, India, killing 91 passengers
+[37].  In a June 1994 test flight designed to stress its computer
+controlled autopilot, the newer Airbus A330 crashed, killing all seven
+aboard [37,38].  Airbus (and in some cases, official inquiries) have
+blamed each of these accidents on pilot error, but doubts remain that
+the controls may have contributed [37].  Nevertheless, the commercial
+aviation industry is committed to fly-by-wire.  Airbus' rival
+Boeing began flight testing its own first fly-by-wire airliner, the
+777, in June, 1994 [39,40].
+
+<h4><a name="transport">Trains and Automobiles</a></h4>
+
+<P>
+Computers are also being applied in ground transport.  In today's new
+cars, computers control the fuel injection and spark timing and may
+control the suspension and an anti-lock braking mechanism [41, 42]. GM
+is already experimenting with "drive-by-wire" automobiles in which
+there is no physical connection (other than the computer) from the
+steering wheel to the tires [43]. In railroads, computers control the
+switches that are supposed to prevent trains from colliding [44,45].
+
+<h4><a name="power">Power</a></h4>
+
+<P>
+Computers are used extensively to control processes in factories and
+power plants. Some of the emergency shutdown systems that are supposed
+to "scram" nuclear reactors are computer controlled [46,47,48,49,50].
+
+<h4><a name="weapons">Weapons</a></h4>
+
+<P>
+In weapons systems, computers warn of imminent attack, identify and
+track targets, aim guns and steer missiles, and arm and detonate
+explosives [51].  The UK Ministry of Defence
+(MOD) recently analyzed a sample of program
+fragments drawn from the NATO military software inventory.
+One in ten contained errors, and of those, one 
+in twenty (or one in 200 overall) had errors serious enough to result
+in loss of the vehicle or plant--for example, an actuator could
+be driven in the direction opposite from the intended one.
+Some of these modules had passed extensive tests on
+multimillion-dollar test rigs [102].  
+The largest single American casualty of the
+Gulf War occured on February 25 1991, when an Iraqi Scud missile
+struck a barracks near Dhahran, Saudi Arabia, killing 28.  A 
+nearby air defense battery failed to launch any Patriot missiles against
+the Scud because of a software error [17, 52, 53].
+
+<h3><a name="errors">Software Errors Are a Serious Problem</a></h3>
+
+<P>
+All safety-critical applications depend on software, but
+software is among the most imperfect of the products of
+modern technology [16, 17]. Pundits debate whether computers will
+develop superhuman intelligence or conduct automated wars in
+space, but back here on planet Earth, after more than 30 years
+of commercial data processing, folks are still receiving $20
+million tax bills [54] and dunning letters for $0.00 [55].
+Ensuring that simple results are reliably achieved strains the
+limits of the typical programmer's art. In the last few years,
+industry giants IBM, Digital Equipment Corporation, Lotus,
+and Microsoft have all sold programs containing errors that
+could destroy users' data [56,57,58,59,60,61]. A repository of problem
+reports maintained by Peter Neumann at SRI International
+under the co-sponsorship of the Association for Computing
+Machinery (ACM), a professional organization, currently lists
+more than 400 incidents in which computer problems caused
+or threatened injury or significant financial loss [62]. 
+
+<P>
+These
+are not isolated incidents. They follow from typical practices
+that, in educator Maurice Naftalin's words, "encourage
+programmers to produce, as quickly as possible, large
+programs which they know will contain serious errors" [63]. 
+
+<h4><a name="programming">How Programs Are Written</a></h4>
+
+<P>
+When manufacturers began installing computers in medical
+equipment, they introduced a new kind of problem, never
+encountered in simpler devices: programming errors, or, as
+programmers say, "bugs." Mechanical and electrical design and
+assembly are only a part of the effort involved in constructing
+a computer-controlled device. The behavior of the machinery
+is determined by lists of instructions called programs, or
+software. Programs are not manufactured in any traditional
+sense; they are written in a notation called a programming
+language. To understand why bugs are such a problem, it is
+necessary to know a little about how a program is built.
+
+<P>
+Ideally, a program is developed in several stages. First, it is
+specified: designers try to anticipate every situation that the
+machine might encounter, and then describe exactly how it
+should respond to each one. One of the most important jobs
+designers have is providing programmers with a complete and
+unambiguous specification. Features that are not clearly
+specified will be handled by default or at the whim of some
+programmer--who may not be familiar with important practical
+details of the machine's operations. It is possible that the
+designers and programmers of the Therac-25 forgot to
+consider that the operator might switch from X-rays to
+electrons at the last minute, so that contingency was handled
+badly. 
+
+<P>
+The program is then designed: a sort of rough outline is
+drawn up, in which different program subdivisions, or modules,
+are distinguished. At this stage, specific behaviors are assigned
+to each module. It is the designers' responsibility to ensure
+that when the finished modules are collected, or linked, into a
+working program, the specified system behavior emerges.
+Modules can be delegated to different programmers who
+work independently. Large programs are often composed of
+modules produced over several years by programmers who
+never meet. 
+
+<P>
+Finally, the program is coded: programmers
+compose each module by writing lists of programming
+language statements that they believe will accomplish the
+behaviors assigned in the design. At this stage, programmers
+typically compose by typing the program text into a video
+terminal or personal computer. This part of the activity somewhat
+resembles writing a document in a word processor, except
+that the text resembles no natural human language. When
+the program text is complete, it must be translated to machine
+code. Usually, the computer cannot follow the instructions that
+the programmer writes. Instead, the programmer's text must
+be converted to a much more elemental set of instructions that
+the computer can execute. The translation is performed by
+another program called a compiler or assembler. The
+Therac-25 was programmed in assembly language, a
+notoriously obscure and error-prone notation that is quite
+close to the machine code. 
+
+<P>
+All this activity is often conducted in a frenetic, crisis-driven
+atmosphere.  News stories about stressful projects at glamorous
+industry leaders such as Apple and Microsoft tell of programmers
+who punch holes in walls, get divorced, have mental breakdowns, and
+commit suicide [64,65].
+
+<P>
+A program's size is measured by
+counting the number of programming language statements, or
+lines of code, it contains. Simple appliances like microwave
+ovens may contain a few hundred or a few thousand lines.
+Typical commercial products like word processors contain tens
+or hundreds of thousands of lines --- the printed listing of the
+program text is the size of a thick novel.
+Large systems like aircraft flight
+control programs contain hundreds of thousands, or even millions, of
+lines --- like a multivolume encyclopedia.
+
+<P>
+Producing quality software is not only a coding problem; it is also
+a design and management problem [77,110].  Most programmers'
+training concentrates on writing programs that are at most a few
+thousand lines long.  Building large programs that are tens or
+hundreds of thousands of lines long requires a different set
+of skills, emphasizing communication and organization, in
+order to extract useful specifications, divide the project into
+modules that are reasonable work assignments, ensure
+continuity and consistency among the programmers and their
+individual products, and make sure that meaningful testing and other
+quality assurance is performed. Without all this, skilled coding is in vain.
+
+
+<P>
+The popular press and the programming culture itself have tended to
+neglect the role of communication and organizational skills
+and glorify instead the eccentric "hacker" who energetically but
+unsystematically improvises huge programs. (This usage of
+"hacker" is much older than its recent connotations of
+computer crime, and derives from the original meaning, "to cut
+irregularly, without skill or definite purpose.") The
+consequences of this approach are aptly described by Marvin Minsky, dean of
+American artificial intelligence researchers: 
+
+<blockquote>
+"When a program
+grows in power by an evolution of partially understood patches
+and fixes, the programmer begins to lose track of internal
+details, loses his ability to predict what will happen, begins to
+hope instead of to know, and watches the results as though the
+program were an individual whose range of behavior is
+uncertain" [66]. 
+</blockquote>
+
+<P>
+The all-too-frequent result is programs that
+seem to work, but then fail unexpectedly. The persistence of
+lurking defects in products released on the market is one of
+the main things that distinguishes software from hardware.
+Software engineer John Shore says, "It's extremely hard to
+build a large computer program that works correctly under all
+required conditions, but it's easy to build one that works 90
+percent of the time. It's also hard to build reliable airplanes,
+but it's not particularly easy to build an airplane that flies 90
+percent of the time" [16]. 
+
+<h4><a name="detection">How Errors Are Detected</a></h4>
+
+<P>
+Most programmers are not able to demonstrate that their creations will
+compute the intended results, except by running tests. It is literally
+a trial-and-error process. It is not terribly confidence-inspiring
+because the number of possible situations that a program must deal
+with is usually much too large to test, and a case that was left out
+of the test set may cause the program to fail.  As a result, errors
+are left in products when they reach the market, to be discovered and
+corrected over time as the system is used. The term maintenance is
+used in the computer field to describe this continuous error-removal
+process.
+
+<P>
+How many errors are left in typical programs? A lot.
+Typical commercial programs contain between 10,000 and
+100,000 lines of code. One measure of program quality is the
+number of errors per thousand lines of code. Typical
+programmers leave around 50 errors per thousand lines in the
+code they write [67]; these must be weeded out during
+testing or actual use. One report on "the American data
+processing industry" says that vendors find less than 75% of
+the programming errors, leaving customers to stumble over the
+remaining 25% [68]. One reviewer concludes that
+conscientious vendors try to test until only one or two errors
+per thousand lines remain in the products they place on the
+market [69]. Errors reported in newly delivered products range
+from less than one per thousand lines to around ten per
+thousand [67, 70] with "good" products clustering around one
+to five errors per thousand lines. This means that a typical
+"good" program may contain hundreds of errors. 
+
+<P>
+Usually,
+software errors do not have serious consequences because
+people can repair the damage--at some cost in time and
+aggravation. The state sends you a $20 million tax bill? Clear it
+up with a phone call--or several. The telephone switching
+computer cut off your call? Hang up and dial again. The word
+processor at the office deleted your letter? Type it in again,
+and this time be sure to make a backup copy to store
+offline--just as you were warned to do. Experienced computer
+users develop a defensive style, a whole repertoire of
+workarounds. It is this human ability to adapt to problems that
+makes it possible to base a computerized society on imperfect
+products. 
+
+<P>
+But some products do not provide much opportunity
+for people to correct errors. When a computer controls a
+linear accelerator or an airplane, the results of an error cannot
+be discarded or ignored. If the patient dies or the airplane
+crashes, the computation cannot be done over. Applying
+typical programming practices to critical systems like these can
+result in tragedy. 
+
+<h3><a name="better">Building Better Computer-Controlled Systems</a></h3>
+
+<P>
+Safety-critical products demand a different, more rigorous approach
+than most other computer applications. They require several
+disciplines that are still unfamiliar to many programmers and
+programming managers: Safety engineering teaches how to design systems
+that remain safe even when hardware or software fails. Software
+engineering provides methods for developing complex programs
+systematically.  Formal methods are mathematically based techniques
+for increasing product reliability that overcome some of the
+limitations of trial-and-error testing and subjective reviews. In
+addition, certification and regulation may help ensure that products
+are produced using the best techniques available, by people who
+understand how to use them. Liability must fall upon vendors who fail.
+
+<P>
+All of this is expensive. Computer system safety expert Nancy
+Leveson says, "I do not know how to develop safety-critical
+software cheaply" [71]. 
+
+<h4><a name="safety">Safety Engineering</a></h4>
+
+<P>
+Safety engineering emerged from the missile projects of the
+late 1950s and early 1960s. A series of spectacular explosions
+demonstrated that the complexity and risk of modern
+technologies demand a systematic approach to controlling
+hazards [21, 72, 73]. In a famous 1962 incident, the Mariner I
+Venus probe had to be destroyed when it went off-course
+because of a single-character transcription error in the
+equations used as specifications for its control program [74].
+
+<P>
+The most important lesson of safety engineering is that safety
+is an important system requirement in its own right and must
+be designed into a product, not added on as an afterthought.
+Safety requirements often conflict with other system
+requirements and may suggest a quite different design than
+would be obtained if cost and performance were the only
+considerations. Resolving such conflicts in a consistent and
+intelligent manner (rather than by default or at the whim of
+the individual) demands that safety requirements be explicitly
+separated out and that responsibility for meeting them be
+assigned to someone with authority. 
+
+<P>
+Safety is not the same
+thing as reliability. Reliability is a measure of how well the
+system does exactly what it is intended to do. A safe system
+protects from hazards whether its intended function is
+performed correctly or not. In fact, safety is most concerned
+with what happens when the system does not work as
+expected. Safety engineers assume that systems will fail--and
+then they work through the consequences. 
+
+<P>
+Computers--by
+providing convenient controls, well-designed displays, and
+more comprehensive diagnostics and error logging--can
+increase safety. But naive application of computers can
+increase hazards. It is possible to replace a complex control
+mechanism with a single computer; the Therac-25 was very
+close to that idea. But this simplification violates the first rule
+of safety engineering--that failure of a single component
+should never, by itself, be capable of causing an accident. This
+principle rules out designs in which safety depends entirely
+upon correct operation of a single computer, unprotected by
+hardwired interlocks. 
+
+<P>
+Some designers of computer-based
+systems seem unaware of the principles of safety engineering.
+Part of the problem may be lack of instruction. Builders of
+hard-wired radiation therapy machines can refer to very
+detailed guides that explain how to design and test safety
+circuits [75]. Nothing like this exists for computer-controlled
+machines. A new specialty called software safety is beginning
+to adapt the principles of safety engineering to
+software-controlled systems [76]. 
+
+<h4><a name="softeng">Software Engineering</a></h4>
+
+<P>
+Software engineering takes its name from a conference
+convened by NATO in 1968, when the incipient "software
+crisis" [15] began to make it clear that building software
+demands a systematic, disciplined approach rather than ad-hoc
+tinkering. 
+
+<P>
+The central idea of software engineering is that
+programming projects have to be performed in stages, with an
+identifiable end product at each stage. The final product is the
+program itself, but there are several, or many, intermediate
+stages of design as well. The visible products of most of these
+intermediate stages are documents about the program.
+Typically, these include a specification describing what the
+product is supposed to do, a design guide describing how the
+program is organized, a test plan describing a series of tests
+that are supposed to show that the program works as promised
+in the specification, and a test report that presents the test
+results and explains how any problems were resolved.
+
+<P>
+Separating projects into stages and documenting each stage enables
+products to be reviewed by experts other than their creators [77].
+Auditing the documents (including the program text itself) is the
+primary means of quality assurance in engineered projects.  The
+auditors join the programmers in sharing responsibility for the
+product. It is analogous to civil engineering, where engineers must
+produce detailed designs that are subjected to analysis and review
+before anyone starts pouring concrete. This process is contrary to the
+stereotype of the eccentric genius programmer, but, as programming
+expert Tony Hoare notes, "The principle that the work of an engineer
+should be inspected and signed off by another more experienced and
+competent engineer lies at the heart of the codes of safe practice in
+all branches of engineering" [78].
+
+<P>
+This review process is very important because it provides an
+additional way besides testing to detect errors.  Testing is always
+inconclusive, and it comes too late --- what if testing reveals
+serious defects late in the project?  In contrast, the review process
+can begin early, before there is any program to test.  Numerous
+projects have shown that reviews can be more effective than testing at
+discovering errors (in terms of time and money expended) [79, 80].
+Testing is always necessary but instead of being the primary quality
+assurance method, it complements the analyses by checking the
+assumptions on which the development is based (for example,
+assumptions about the behavior of the hardware and other aspects of
+the environment where the program runs).
+
+<P>
+Programmers work much differently on engineered software projects.
+They find about half their effort is devoted to planning and design,
+and much of the rest goes for testing and other quality assurance
+activities. Only 15% to 20% is actually spent coding statements in a
+programming language--what most people think of as programming [81].
+The paradox of software engineering is that the least amount of effort
+is devoted to the one component that can be sold to the customer. Of
+course, the effort devoted to the other stages is supposed to ensure
+the quality of the delivered code, and some studies have found that
+fixing an error discovered by customers costs as much as 100 times as
+much as catching it early in development [81].
+
+<P>
+The engineering approach is unfamiliar to many programmers.  In 1987,
+the FDA's Frank Houston found that
+
+<blockquote>
+"a significant amount of software for life-critical systems
+comes from small firms . . . some of which operate literally in
+basements and garages . . . so there is little perceived incentive
+on the part of small, commercial sector businesses to read or
+heed the lessons learned by large companies ... [82]." 
+</blockquote>
+
+<P>
+Some programmers dislike the approach.  At a 1988 medical equipment
+manufacturer's meeting, James Howard of GE Medical Systems criticized
+it as "an ineffective, costly and time-consuming strategy based on
+documentation of many specific steps during software development"
+[83].  In fact, this approach to software development is vulnerable to
+its own abuses and problems.  Many programmers can recall experiences
+where they spent much effort producing documents of dubious usefulness
+in order to placate managers or regulators.  The Therac-25 project
+produced many documents, but some of their contents were specious [1].
+
+<P>
+[Note: in the first edition, Howard's quote was misprinted as 
+``effective'' not ``ineffective''!]
+
+<h4><a name="fm">Formal Methods</a></h4>
+
+<P>
+Formal methods apply mathematics and logic to programming [84]. People
+who have heard that computers are logical machines are surprised to
+learn that this is a radical innovation. In fact, most programs today
+evolve in a rather ad-hoc fashion and are evaluated empirically, by
+trial-and-error testing.  Formal methods propose a radical alternative
+to this usual practice.  They posit that the the behavior of a program
+can be comprehensively described in advance, that the program can be
+constructed in a systematic way to achieve the intended behavior, and
+that it is possible to determine whether the program is correct by
+analyzing the text of the program, along with its specification and
+design documents.  This differs from typical methods that depend on
+testing and users' experiences to reveal the behavior of programs only
+after they are written.   Formal methods attempt to make the behavior
+of computer-controlled systems predictable --- an essential quality
+for safety-critical systems.
+
+<P>
+The methods are called formal because they use mathematical and
+logical formulas.  A formula is simply a text or diagram composed of special
+symbols combined according to well-defined rules.  In fact, all
+programming languages are formal notations and every computer program
+is a formula; evaluating formulas is what computers do.  So all
+programming is really ``formal methods.''  However, the term ``formal
+methods'' has come to mean using formulas in the stages that come
+before coding the program.  Not only is the program text written in a
+formal notation, but parts of the specification and/or the design are
+also expressed in some formal notation, in addition to the usual
+English prose and diagrams.  The formal ``specification language''
+used in these early stages is usually different from the programming
+language, and more closely resembles the traditional notations of
+mathematics and symbolic logic.  Such notations can be more
+expressive, easier to understand, and more concise than programming
+languages, and for some purposes can be more precise and compact than
+prose or pictures.
+
+<P>
+Some formal methods concentrate on modelling (that is, describing and
+predicting) program behavior.  They use formal notations to
+describe software requirements and designs, much as designers in other
+fields create circuit diagrams or architectural prints.  These formal
+specifications can be analyzed mathematically to investigate their
+behavior before the product is actually constructed [85].  Other
+formal methods concentrate on proving that programs are correct (or
+not).  They use logical and mathematical inference to investigate
+whether the program text correctly implements the behavior described
+in its formal specification [84,86].  
+
+<P>
+Formal methods are controversial [39,102]. Some critics charge that the
+expression ``proved correct'' promises too much, since a formal proof
+of correctness only shows consistency between two formulas (a formal
+specification and a program); this does not guarantee that the program
+will satisfy its customers.  One project almost went to court over
+misunderstandings about what had been proved and what the proofs meant
+[87]!  Authors of some important formal proofs have written candidly
+about the strengths and limitations of their achievements [88,89,90].
+Proofs really aren't so mysterious; they can be seen as intensive
+reviews or inspections that employ especially powerful analytic techniques.
+
+<P>
+Many programmers still hold the opinion that formal methods are too
+difficult and esoteric for anything but toy problems.  Tony Hoare
+wrote in 1986 that he was unable to find any safety-critical programs
+in use that had been developed formally [78].  But in recent years
+several significant formal developments have been completed [91,92,110]. 
+
+<P>
+The Darlington nuclear power plant near Toronto uses software to
+control its emergency shutdown systems.  The Canadian Atomic Energy
+Control Board (AECB), a regulatory agency, became concerned that the
+shutdown programs, like most software, might contain significant
+undiscovered defects.  As the plant neared completion they required
+the reactor builder to produce a formal specification and prove that
+the code met the specification.  The verification effort (which
+considered about 20,000 lines of code) cost millions and the plant
+opening was delayed several months until it could be completed.  One
+of the builders, dismayed at the unexpected costs, said that they
+would go back to hardwired shutdown systems if they had it to do over
+again --- but the AECB was satisfied and licensed the plant [46,47,48].  
+
+<P>
+The Paris metro subway line uses software to control train speed,
+signal drivers and activate emergency brakes.  The Paris transport
+authority introduced computer control to reduce the interval between
+trains in order to increase capacity and avoid building another subway
+line.  Programmers wrote formal specifications and did proofs of
+correctness for about 9,000 lines of code.  The new controls went into
+service in May 1989; the line carries 800,000 passengers a day on
+trains running two minutes apart [45].  This may be the most ambitious
+application of formal methods to date.  France is planning a similar 
+development for its nationwide rail network [110].
+
+<P>
+In addition to these two tours de force, several smaller projects have
+recently devoted modest efforts to formal methods.  Some have claimed
+improvements in quality (fewer errors), and reduced costs (less
+testing and less effort devoted to fixing errors) [79,92,110], although some of
+these claims have been disputed [80].
+
+<P>
+In computing, formality isn't an option.  Formal methods merely
+introduce the formality earlier rather than later.  This can make
+difficult issues more visible and encourage programmers to seek a more
+thorough understanding of the problem they are trying to solve.  All
+formal methods require that intended behaviors and programs be
+expressed with unusual simplicity and clarity, so they resist the
+usual tendency in programming to make things overly complicated and
+therefore error-prone and difficult to use.  This may be their
+greatest contribution.
+
+<h4><a name="regulation">Certification and Regulation</a></h4>
+
+<P>
+We regulate activities that have safety implications.  Software is
+still largely unregulated. Until recently, aviation and nuclear power
+were the only applications in which software purchased or operated by
+private enterprise was subject to approval by the government. In 1987
+the American Food and Drug Administration (FDA) began regulating
+software in medical devices [93].
+
+<P>
+Some are calling for more regulation.
+John Shore says, "We require certification for doctors, lawyers,
+architects, civil engineers, aircraft pilots, automobile drivers,
+and even hair stylists! Why not software engineers?" [94].
+Referring to the Therac accidents, software safety expert
+Nancy Leveson says, "This is appalling. There needs to be
+some kind of certification of software professionals working on
+safety-critical projects or much stricter government controls."
+Others disagree, fearing government interference and
+increased costs. "I'll fight them to the death," says Robert
+Ulrickson, president of Logical Services Inc., a Santa Clara
+company that designs computerized instruments. "I don't want
+to be part of an economy that's run by the government. The
+way to get quality is not to regulate, but to manage" [95]. But
+Tony Hoare says, "No industry and no profession has ever
+voluntarily and spontaneously developed or adopted an
+effective and relevant code for safe practice. Even voluntary
+codes are established only in the face of some kind of external
+pressure or threat, arising from public disquiet, fostered by
+journals and newspapers and taken up by politicians" [78]. 
+
+<P>
+One approach is to regulate the people that provide
+safety-critical services: they must satisfy educational requirements
+and pass examinations.  States usually require that bridges and large
+buildings be signed off by a licensed professional engineer who
+assumes responsibility for the structure's safety on behalf of the
+contractor.  Engineers become licensed by passing an examination whose
+contents are chosen by senior engineers and which is recognized by a
+state licensing authority.  
+
+<P>
+Programmers often call themselves ``software engineers,'' but none can
+be licensed engineers, because states do not recognize software as a
+licensed engineering specialty.  The programming profession includes a
+great range of education and abilities, and many curricula do not
+provide instruction in topics relevant to building safe systems.
+Studies of employed programmers have found that the best can be more
+than 25 times as able as the worst, and some teams outproduce others
+by factors of four or five [81]. Nor is incompetence and ignorance
+limited to junior programmers; numerous runaway computing projects in
+which millions of dollars are wasted are evidence that many managers
+also have a poor grip on their responsibilities [96, 97].
+
+<P>
+It would be difficult to achieve consensus regarding who might qualify
+as a ``licensed software engineer.''  Prominent computer scientists
+disagree about educational requirements and some have have proposed
+curricula quite different from those currently in use [98,99].
+
+<P>
+A second approach, which appears to be the one gaining the most favor,
+is to certify organizations: companies or departments that produce
+software.  In recent years, two certification schemes have become
+popular.  ISO9000 is a generic quality assurance standard that
+originated in Europe; ISO9000-3 is specialized for software [100].
+The Capability Maturity Model (CMM) [101] was created in the United
+States by the Software Engineering Institute (SEI) at Carnegie-Mellon
+University, which is funded by the Air Force.  Both emphasize the
+systematic engineering process I described in an earlier section.
+Auditors inspect an organization seeking certification and grant them
+a certificate (or not) (ISO9000) or rate them on a scale (CMM).  Both
+ISO9000 and CMM are voluntary, but influential customers (such as
+certain European governments) may require their suppliers to be
+certified.  
+
+<P>
+A third approach is regulate the products themselves: buildings,
+bridges, airplanes, drugs. The government establishes standards that
+these products must meet and conducts inspections to make sure
+products comply.  Regulators can write standards to compell
+industry to adopt particular practices.  The UK Ministry of Defense has
+made a controversial requirement that formal methods must be used to
+develop its safety-critical military software [80, 91, 102, 103].
+
+<P>
+In the United States, the Food and Drug Administration (FDA) regulates
+medical devices.  Manufacturers must notify the agency before they
+bring a new device to market.  If the FDA judges the device to be
+potentially hazardous, it reviews the device's engineering and
+manufacture, and its approval must be obtained before the device can
+be sold.  In September, 1987, the FDA announced that some medical
+software would be included within its regulatory purview [93].  It
+requires manufacturers to show that medical software is developed
+according to good software engineering practices (as described
+earlier) [104, 105].  The FDA exercises its power: 
+for several months in 1994 the
+international electronics giant Siemens agreed to stop shipping
+radiation therapy machines from its plant in Concord, California,
+in response to concerns from the agency [106].
+                                                         
+<h4><a name="liability">Liability and Criminal Penalties</a></h4>
+
+<P>
+When systems fail, victims or their survivors may sue vendors and and
+providers for compensation [5, 107].  In the United Kingdom, a law
+called the Machine Safety Directive says that criminal proceedings may
+be taken against a director or manager accused of negligence in the
+design or manufacture of a device that causes an injury [108].
+
+<h3><a name="conclusion">Conclusion</a></h3>
+
+<P>
+The Therac accidents remain the best-known examples in the public
+record of computer-related deaths and injuries.  Fortunately, they
+proved not to be harbingers of a whole series of software-related
+accidents in medicine --- no similar runs of accidents have occurred
+since.  Conservative use of computers in safety-related functions,
+better software development practices, and regulatory attention have
+apparently had an effect.
+
+<P>
+Nevertheless, more subtle difficulties remain.  Now that the
+manufacturers recognize the most obvious hazards, issues of usability
+become important [109].  Vendors and customers want different things from
+computer control: customers want devices that are safe and easy to
+use, vendors want devices that are easy to develop, manufacture and
+service.  These goals need not be incompatible, but emphasis on the
+vendors' goals has resulted in computer-controlled medical
+devices that are poorly matched to clinics' needs: they create extra
+work for people to do; they are overly complicated and difficult to
+use.  The people who operate them must devote much of their time and
+vigilant attention to guarding against errors in treatment delivery
+and other mixups.  Patient safety still depends on the skill and
+conscientiousness of individual engineers, programmers, managers, and
+clinic staff.
+
+<h3><a name="ref">References</a></h3>
+
+<OL>
+  <LI>Leveson, Nancy G. and Clark S. Turner.  (1993).  ``An
+Investigation of the Therac-25 Accidents''.  Computer, 26(7), 
+July, pp. 18-41.
+
+  <LI>Joyce, Edward J. (1986). ``Malfunction 54: Unraveling
+Deadly Medical Mystery of Computerized Accelerator Gone
+Awry,'' American Medical News, October 3, pp. 1, 13-17. 
+
+  <LI>Joyce, Edward J. (1987). ``Software Flaw Known before
+Radiation Killed Two,'' American Medical News, January 16,
+  3, 42-45. 
+
+  <LI>Joyce, Edward J. (1987). ``Accelerator Linked to Fifth
+Radiation Overdose,'' American Medical News, February 6, p.
+1, 49, 50.
+
+  <LI>Joyce, Edward J. (1987). ``Software Bugs: A Matter of Life
+and Liability,'' Datamation, May 15, pp. 88-92. 
+
+  <LI>New York Times (1986). ``Computer Error is Cited in
+Radiation Death.'' June 21, p. 8. 
+
+  <LI>Saltos, Richard (1986). ``Man Killed by Accident with Medical
+Radiation,'' Boston Globe, June 20, p. 1. 
+
+  <LI>Breu, Giovanna, and William Plumber (1986?) ``A Computer
+Glitch Turns Miracle Machine into Monster for Three Cancer
+Patients,'' People (date lost).
+
+  <LI>Wizenberg, M. D. Morris (1987). Letter to American Society
+for Therapeutic Radiology and Oncology members (June 26).
+
+  <LI>Joyce, Edward J. (1986). ``Software  `Bug' Discovered in
+Second Linear Accelerator,'' American Medical News,
+November 7, p. 20-21. 
+
+  <LI>Joyce, Edward J. (1986). ``Firm Warns of Another Therac 20
+Problem,'' American Medical News, November 7, p. 20, 21. 
+
+  <LI>American Medical News (1987). ``Failure Not the First Time.''
+January 16, p. 43. 
+
+  <LI>Radiological Health Bulletin (1986). FDA Monitoring
+Correction of Therac Radiation Therapy Units.'' 20(8),
+(December), pp. 1-2. 
+
+  <LI>Radiological Health Bulletin (1987). Therac-25 Accelerator
+Purchasers Advised to Discontinue Routine Use.'' 21(3),
+(March), pp. 1-2. 
+
+  <LI>Randell, Brian (1979). Software Engineering in 1968,'' in
+Proceedings of the Fourth International Conference on
+Software Engineering, IEEE Computer Society, p. 1-10. 
+
+  <LI>Shore, John (1985). The Sachertorte Algorithm and Other
+Antidotes to Computer Anxiety. Viking, New York.
+
+  <LI>Wiener, Lauren (1993).  Digital Woes: Why We Should Not Depend On
+Software,  Addison-Wesley.
+
+  <LI>Diamond, James J., Gerald E. Hanks, and Simon Kramer
+(1988). ``The Structure of Radiation Oncology Practices in the
+United States''. International Journal of Radiation Oncology,
+Biology and Physics, 14(3), (March), pp. 547-548. 
+
+  <LI>Hanks, Gerald E., James J. Diamond, and Simon Kramer
+(1985). ``The Need for Complex Technology in Radiation
+Oncology: Correlations of Facility Characteristics and
+Structure with Outcome,'' Cancer, 55, pp. 2198-2201. 
+
+  <LI>Karzmark, C. J., and Neil C. Pering (1973). ``Electron Linear
+Accelerators for Radiation Therapy: History, Principles and
+Contemporary Developments,'' Physics in Medicine and
+Biology, 18(3), (May), pp. 321-354. 
+
+  <LI>Frola, F. R., and C. O. Miller (1984). System Safety in Aircraft
+Acquisition. Logistics Management Institute, Washington, D.C.
+
+  <LI>IEEE Spectrum (1987). ``Faults and Failures: Multiplying
+Mistakes.'' 24(8), p. 17.
+
+  <LI>British Medical Journal (1966). ``Radiation Accident at
+Hammersmith.'' Number 5507 23 July, p. 233. 
+
+  <LI>Karzmark, C. J. (1967). ``Some Aspects of Radiation Safety for
+Electron Accelerators Used for Both X-ray and Electron
+Therapy,'' British Journal of Radiology, 40, pp. 697-703. 
+
+  <LI>O'Brien, P., H. B. Michaels, B. Gillies, J. E. Aldrich, and J. W.
+Andrew (1985). ``Radiation Protection Aspects of a New
+High-Energy Linear Accelerator,'' Medical Physics, 12(1),
+(January/February), pp. 101-107. 
+
+  <LI>Dunsmore, H. E. (1988). ``Evidence Supports Some Truisms,
+Belies Others,'' IEEE Software, 5(3), (May), pp. 96, 99. 
+
+  <LI>Perrow, Charles (1984). Normal Accidents: Living with
+High-Risk Technologies. Basic Books, New York. 
+
+  <LI>Karzmark, C. J. (1987). ``Procedural and Operator Error
+Aspects of Radiation Accidents in Radiotherapy,'' International
+Journal of Radiation Oncology, Biology and Physics, 13(10),
+(October), pp. 1599-1602. 
+
+  <LI>Bassen, H., J. Silberberg, F. Houston, W. Knight, C.
+Christman, and M. Greberman (1985). ``Computerized Medical
+Devices: Usage Trends, Problems, and Safety Technology,'' in
+James C. Lin and Barry N. Feinberg, editors, Frontiers of
+Engineering and Computing in Health Care: Proceedings of
+the Seventh Annual Conference of the IEEE/Engineering in
+Medicine and Biology Society, p. 180-185. 
+
+  <LI>Moreno, Mylene (1989) ``Product Recalls,'' The Boston Globe, 
+Monday 10 April, page 14 (reported by B.J. Herbison in 
+RISKS-FORUM Digest 8(53)).  Also, 
+  Jorgens, Joseph (1991). ``The Purpose of Software Quality
+Assurance: A Means to an End,'' in Richard Fries, editor,
+Developing, Purchasing, and Using Safe, Effective, and
+Reliable Medical Software, Association for the Advancement
+of Medical Instrumentation, Arlington, Virginia. pp. 1 -- 6.
+
+
+  <LI>Spitzer, Cary R. (1986). ``All-digital Jets Are Taking Off,''
+IEEE Spectrum, September, pp. 51-56.
+
+  <LI>Rouquet, J. C., and P. J. Traverse (1986). ``Safe and Reliable
+Computing on Board the Airbus and ATR Aircraft,'' in W. J.
+Quirk, editor, Proceedings of Safecomp '86: Safety of
+Computer Control Systems, Pergamon Press, Oxford, England.
+
+  <LI>Flight International. September 3, 1988.
+
+  <LI>Neumann, Peter G. (1989). ``Saab Blames Gripen Crash on
+Software,'' ACM SIGSOFT Software Engineering Notes 14(2), April, p. 22
+(cites Aviation Week and Space Technology, 27 Feb 1989, p. 31).
+
+  <LI>Neumann, Peter G. (1993). ``Saab JAS 39 `Gripen' Crash,'' 
+ACM SIGSOFT Software Engineering Notes 18(4), October, p. 11.
+ 
+  <LI>Neumann, Peter G. (1988). ``The Air France Airbus,'' ACM SIGSOFT
+Software Engineering Notes 13(4), October, p. 3 (cites Aviation Week
+and Space Technology, August 8 1988 on A320 crash inquiry).
+
+  <LI>Ladkin, Peter (1994). ``Summary of Der Speigel Interview with 
+Bernard Ziegler, Airbus Ind.'' RISKS-FORUM Digest, 16(35), August 25.
+
+  <LI>Acohido, Brian (1994). ``Airbus Crash May Affect Sales
+Rivalry: Glitch in A330's Autopilot Computer Suspected,'' Seattle
+Times, July 1, pp. F1, F6.
+
+  <LI>Wiener, Lauren (1992).  ``A Trip Report on SIGSOFT '91,'' ACM
+SIGSOFT Software Engineering Notes 17(2), April, pps. 23 -- 38.
+
+  <LI>West, Karen (1993). ``Cruise Control: 777 Gets a Boost from
+Technology of Fly-by-Wire,'' Seattle Post-Intelligencer, Sept 13,
+pps B5,B8.
+
+  <LI>Jurgen, Ronald K. (1987). Detroit '88: Driver-friendly
+Innovations,'' IEEE Spectrum, December, pp. 53-57. 34.
+
+  <LI>Voelcker, John (1988). Electronics Puts Its Foot on the Gas,''
+IEEE Spectrum, May, pp. 53-57. 
+
+  <LI>Stambler, Irwin (1988). ``Fly-by-Wire Techniques Are Being
+Adapted for Automobile Controls,'' Research and
+Development, March, p. 41. 
+
+  <LI>Murphy, Erin E. (1988). ``All Abroad for Solid State,'' IEEE
+Spectrum, 25(13), December, pp. 42-45.
+
+  <LI>Craigen, Dan, Gerhart, Susan and Ralston, Ted. (1994).
+``Case Study: Paris Metro Signalling System,'' IEEE Software, 11(1),
+January, pp. 32--35.
+
+  <LI>Peterson, Ivers (1991). ``Finding Fault,'' Science News, 139(7),
+February 16, 1991, pp. 104 -- 106.
+
+  <LI>Parnas, D.L., Asmis, G.J.K., and Madey, J. (1991).  ``Assessment
+of Safety-Critical Software in Nuclear Power Plants,'' Nuclear Safety,
+32(2), April-June, pp. 189 -- 198.
+
+  <LI>Craigen, Dan, Gerhart, Susan and Ralston, Ted. (1994). ``Case
+Study: Darlington Nuclear Generating Station,'' IEEE Software, 11(1),
+January, pp. 30--32.
+
+  <LI>Dolan, Brad (1994). ``Software Testing at Sizewell,'' RISKS-FORUM
+DIGEST, 15(58), Feb. 23. (reports on article ``Testing the Software,'' in
+Nuclear Engineering International, 12/93, p.10)
+
+  <LI>Parnas, David (1994). ``Re: Software Testing at Sizewell,''
+RISKS-FORUM DIGEST, 15(59), Feb. 26.
+
+  <LI>Bellin, David, and Gary Chapman, editors (1987). Computers
+in Battle: Will They Work? Harcourt, Brace Jovanovich,
+Boston. 
+
+  <LI>Schmitt, Eric (1991).  ``Army Blames Patriot's Computer For
+Failure to Stop Dhahran Scud,'' New York Times, May 20, pp. A1, A6.
+
+  <LI>Marshall, Eliot (1992). ``Fatal Error: How Patriot Overlooked a
+Scud,'' Science, 255, March 13, p. 1347.
+
+  <LI>McBride, Steven (1988). ``State Taxes on a New Computer
+System,'' RISKS-FORUM Digest, 6(6), (April 13), (cites
+March 15, 1988, Ogden Standard Examiner). 
+
+  <LI>Saltzer, Jerome H. (1988). ``Zero-balance Dunning Letter,''
+RISKS-FORUM Digest, 7(36), (August 17). 
+
+  <LI>Rogers, Michael (1986). ``Software Makers Battle the Bugs,''
+Fortune, February 17, p. 83. 
+
+  <LI>Ruby, Daniel, and Shan Chan (1986). ``Who's Responsible for
+the Bugs?'' PC Week, May 27, pp. 51-54.
+
+  <LI>Kneale, Dennis (1985). ``Buyer Beware: Software Plagued by
+Poor Quality and Poor Service,'' Wall Street Journal, October
+2. 
+
+  <LI>Digital Equipment Corporation (1986). ``Problem in
+VAX/VMS Data Encryption Facility,'' VAX/VMS Systems
+Dispatch, March, p. 21. 
+
+  <LI>Jones, Stephen (1988). ``Microsoft Scrambles to Head Off
+Runaway Mouse with Word Rewrite,'' Computerworld, 39, 42,
+September 5, pp. 39-42. 
+
+  <LI>Gleick, James (1992).  ``Chasing Bugs in the Electronic Village,''
+New York Times Magazine,  Sunday June 14, pp. 38 ff.
+
+  <LI>Neumann, Peter G. (1994). ``Illustrative Risks to the Public in the
+Use of Computer Systems and Related Technology,'' ACM Software
+Engineering Notes, 19(1), January, pp. 16 -- 29.
+
+  <LI>Naftalin, Maurice (1988). ``Correctness for Beginners,'' in R.
+Bloomfield, L. Marshall, and R. Jones, editors, VDM '88: VDM--The Way
+Ahead (Lecture Notes in Computer Science No. 328), Proceedings of the
+2nd VDM-Europe Symposium, Dublin, Ireland, Springer-Verlag, Berlin.
+
+  <LI>Markoff, John (1993).  ``Marketer's dream, engineer's
+nightmare,'' New York Times Business Section, Sunday, December 12.
+
+  <LI>Zachary, G. Pascal (1993). ``Agony and Ecstacy of 200 Code
+Writers Begets Windows NT.'' Wall Street Journal, May 26, p.1.
+
+  <LI>Minsky, Marvin (1967). ``Why Programming Is a Good
+Medium for Expressing Poorly Understood and Sloppily
+Formulated Ideas,'' in Design and Planning II, Hastings House,
+New York. (Quoted by J. Weizenbaum in Computer Power
+and Human Reason, pps. 234-235). 
+
+  <LI>Beizer, Boris (1984). Software System Testing and Quality
+Assurance. Van Nostrand Reinhold, New York. 
+
+  <LI>Jones, C. (1988). ``Building a Better Metric,'' Computerworld
+Extra (a supplement to Computerworld ), June 20, pp. 38-39.
+
+  <LI>Petschenik, N. H. (1985). ``Practical Priorities in System
+Testing,'' IEEE Software, 2(5), pp. 18-23. 
+
+  <LI>Musa, J. D., A. Iannino, and K. Okumoto (1987). Software
+Reliability: Measurement, Prediction, Application.
+McGraw-Hill, New York. 
+
+  <LI>Leveson, Nancy (1987). ``A Scary Tale--Sperry Avionics
+Module Testing Bites the Dust!'' ACM Software Engineering
+Notes, 12(2), (April), pp. 23-25. 
+
+  <LI>Rodgers, W. P. (1971). Introduction to System Safety
+Engineering. Wiley, New York. 
+
+  <LI>Miller, C. O. (1971). ``Why System Safety?'' Technology
+Review, 73(4), (February), pp. 28-33. 
+
+  <LI>Ceruzzi, Paul E. (1989). Beyond the Limits: Flight Enters the
+Computer Age. MIT Press, Cambridge, Mass. pp. 202-203. 
+
+  <LI>Post, R. J. (1971). ``Some Considerations of Interlocking and
+Safety Circuits for Radiotherapy Apparatus,'' International
+Journal of Radiation Engineering, 1(2), pp. 169-191. 
+
+  <LI>Leveson, Nancy G. (1986). ``Software Safety: What, Why and
+How,'' ACM Computing Surveys, 18(2), (June), pp. 125-163.
+
+  <LI>Parnas, David Lorge, and Paul C. Clements (1986). ``A
+Rational Design Process: How and Why to Fake It,'' IEEE
+Transactions on Software Engineering, SE-12(2), (February),
+pp. 251-257. 
+
+  <LI>Hoare, Tony (1986). ``Maths Adds Safety to Computer
+Programs,'' New Scientist, 18 September, pp. 53-56. 
+
+  <LI>Linger, Richard C. (1993). ``Cleanroom Software Engineering for
+Zero-Defect Software,'' Proceedings of the 15th International
+Conference on Software Engineering, IEEE Computer Society Press, pp. 2
+-- 13. 
+
+  <LI>Fenton, Norman, Pfleeger, Shari Lawrence, and Glass, Robert
+(1994). ``Science and Substance: A Challenge to Software Engineers.''
+IEEE Software 11(4), July, pp. 86 -- 95.
+
+  <LI>Boehm, Barry (1987). ``Industrial Software Metrics Top Ten
+List,'' IEEE Software, 4(5), (September), pp. 84-85.
+
+  <LI>Houston, M. Frank (1987). ``What Do the Simple Folk Do?
+Software Safety in the Cottage Industry,'' in Proceedings of the
+COMPASS '87 Computer Assurance Conference
+(Supplement), pages S-20 -- S-25.
+
+  <LI>Howard II, J. M. (1988). ``A Hazard Oriented Approach to
+Computer System Safety,'' in Proceedings, AAMI 23rd Annual
+Meeting and Exposition, Association for the Advancement of
+Medical Instrumentation, Arlington, Virginia, p. 48.
+
+  <LI>Hoare, C. A. R. (1987). ``An Overview of Some Formal
+Methods for Program Design, Computer, 20(9), (September),
+pp. 85-91. 
+
+  <LI>Delisle, Norman and David Garlan (1990).  A formal specification
+of an oscilloscope. IEEE Software, 7(5), September, pp. 29 -- 36.
+
+  <LI>Cohen, Edward (1990).  ``Programming in the 90's: An Introduction
+to the Calculation of Programs,'' Springer-Verlag, New York.
+
+  <LI>MacKenzie, Donald (1991). ``The Fangs of the VIPER'' Nature, 352,
+August 8, pp. 467 -- 468.
+
+  <LI>Gerhart, Susan and Yelowitz, Lawrence (1976).  ``Observations of
+fallacy in the application of modern programming methodologies,'' IEEE
+Transactions on Software Engineering, SE-2(3), September, pp. 195 --
+207.
+
+  <LI>Cohn, Avra (1989). ``The Notion of Proof in Hardware Verification,''
+  Automat. Reason. 5, pp. 127 -- 139.
+
+  <LI>Rushby, John and von Henke, Fredrich (1991).  ``Formal
+Verification of Algorithms for Critical Systems,'' Proceedings of the
+ACM SIGSOFT '91 Conference on Software for Critical Systems (also
+published as ACM Software Engineering Notes 16(5), December), pp. 1 --
+15.
+
+  <LI>Bowen, Jonathan and Stavridou, Victoria (1993). ``Safety-critical
+Systems, Formal Methods, and Standards,'' Software Engineering
+Journal, 8(4), July, pp. 189 -- 209.
+
+  <LI>Craigen, Dan, Gerhart, Susan and Ralston, Ted. (1994).
+``Experience with Formal Methods in Critical Systems,'' IEEE Software, 11(1),
+January, pp. 21 -- 28.
+
+  <LI>Food and Drug Administration (1987). ``Draft FDA Policy for
+the Regulation of Computer Products,'' Federal Register.
+September 25. 
+
+  <LI>Shore, John (1988). ``Why I never met a programmer I could
+trust,'' Communications of the ACM, 31(4), (April), pp.
+372-375. 
+
+  <LI>Carey, Peter (1987). ``Programmers May be Facing
+Regulation,'' San Jose Mercury News, December 1, back page.
+
+  <LI>Business Week (1988). ``It's Late, Costly, Incompetent--But Try
+Firing a Computer System.'' November 7. 
+
+  <LI>Carroll, Paul B. (1988). ``Computer Glitch: Patching up
+Software Occupies Programmers and Disables Systems,'' Wall
+Street Journal, January 22, pp. 1, 12. 
+
+  <LI>Parnas, David Lorge (1990). ``Education for Computing
+Professionals,'' IEEE Computer, January, pp. 17 -- 22.
+
+  <LI>Dijsktra, Edsger et al (1989). ``On the Cruelty of Really
+Teaching Computer Science,'' Communications of the ACM, 32(12),
+December, pp. 1398 -- 1414.
+
+  <LI>Bamford, Robert C. and Deibler, William J (1993). ``Comparing,
+Contrasting ISO9001 and the SEI Capability Maturity Model,'' IEEE
+Computer, 26(10), October, pp. 68 -- 70.
+
+  <LI>Humphrey, Watts (1989). ``Managing the Software Process,'' 
+Addison Wesley.
+
+  <LI>Jacky, Jonathan (1988). ``COMPASS '88 Trip Report,'' ACM
+Software Engineering Notes, 13(4), (October), pp. 21-27.
+
+  <LI>Tierney, M. (1993). ``The Evolution of Def Stan 00-55,'' in
+Quintas, Paul (ed.): Social Dimensions of System Engineering, Ellis
+Horwood. (also in Technology Analysis and Strategic Management 4(3),
+1992, pp. 245 -- 278.)
+
+  <LI>Food and Drug Administration (1987). Technical Reference
+on Software Development Activities (draft).
+
+  <LI>Food and Drug Administration (1991). Reviewer Guidance for
+Computer-controlled Medical Devices Undergoing 510(k) Review.  (from
+the Office of Device Evaluation, Center for Devices and Radiological
+Health, FDA).
+
+  <LI> Siemens Medical Systems, Inc. (1995).  ``Siemens Resumes Shipment
+  of Radiation Oncology Equipment for U.S. Customers.'' (press release
+  circulated in January 1995) 
+
+  <LI>American Medical News (1987). ``Suits Filed Over Deaths
+Linked to Therac 25.'' January 16, p. 44. 
+
+  <LI>Neesham, Clair (1992).  ``Safe Conduct,'' Computing, November 12.
+(Noted in RISKS-FORUM Digest 14(5), November 16, 1992 by Jonathan Bowen).
+
+  <LI>Winograd, Terry (1990). ``What Can We Teach About Human-Computer
+Interaction,'' in Chew, Jane C. and Whiteside, J. (eds.): Empowering
+People: CHI '90 Conference Proceedings, ACM Press.
+
+  <LI>Gibbs, W. Wayt (1994). ``Software's Chronic Crisis,'' 
+Scientific American 271(3), September, pps. 86 -- 95.
+
+</OL>
+
+<p>
+<a name="updates">This report was written in 1994</a>.  Here are some pertinent
+books that have been published since.
+</p>
+
+<ol>
+<li>Neumann, Peter (1994).  Computer-Related Risks.  Addison-Wesley.</li>
+
+<li>Leveson, Nancy (1995).  Safeware: System Safety and Computers.
+Addison-Wesley.</li>
+
+<li>Jacky, Jonathan (1997). The Way of Z: Practical Programming with
+Formal Methods.  Cambridge University Press.</li>
+
+<li>Cooper, Alan (1999).  The Inmates are Running the Asylum:
+Why High-Tech Products Drive Us Crazy and How to Restore the Sanity. SAMS.</li>
+</ol>
+
+<p>Here are a few pertinent web sites.</p>
+
+<ol>
+
+<li>RISKS-FORUM Digest, including some of the items cited above<br>
+<a href="http://catless.ncl.ac.uk/Risks">
+<tt>http://catless.ncl.ac.uk/Risks</tt></a></li>
+
+<li>
+Clinical Neutron Therapy System, a radiation therapy machine developed with formal methods<br>
+<a href="http://www.radonc.washington.edu/physics/cnts/">
+<tt>http://www.radonc.washington.edu/physics/cnts/</tt></a></li>
+
+</ol>
+
+<hr>
+
+
+<ADDRESS>
+<A HREF="http://www.radonc.washington.edu/prostaff/jon/">Jonathan Jacky</A> /
+<A HREF="http://www.radonc.washington.edu/">Department of Radiation Oncology</A>
+ 
+Box 356043<br>
+<a href="http://www.washington.edu/">University of Washington</a> /
+Seattle, Washington 98195-6043 / USA<BR>
+Tel (206) 598-4117 / Fax (206) 598-6218<BR>
+<p>
+E-mail: jon@u.washington.edu
+</ADDRESS>
+
+
+</BODY>
+</HTML>
+

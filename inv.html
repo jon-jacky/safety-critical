@@ -1,0 +1,385 @@
+<html>
+<head>
+<title>State-based safety analysis</title>
+</head>
+
+<body>
+
+<h2>State-based safety analysis</h2>
+
+<p>
+This lecture and problem set were given after this reading assignment about
+<a href="safety-abstract.html">safety-critical systems</a>, which
+discusses the linear accelerator example.
+</p>
+
+<hr>
+
+<p>
+You can view software development from two sides: the inside or the
+outside.  The inside view considers how the product is built and how
+it works.  The outside view considers how the product is used and its
+consequences in the world.  It is important to consider both.  
+</p>
+
+<p>
+The purpose of this assignment is to give you a taste of one way to
+think about the outside view: consider the states the system (not just
+the program) is allowed to be in and propose transitions that get the
+system from one state to another.  Make sure the state transitions
+provide a way to get to the intended goal state, while ensuring that
+they cannot enter any forbidden states.  These are the central ideas
+in many formal analysis methods.
+</p>
+
+<h3>States</h3>
+
+<p>
+A <em>state</em> is a "state of affairs", the important properties of
+the system at one point in time.  The state can be represented by a
+collection of <em>variables</em> and their <em>values</em>.  The
+allowed states can be represented as restrictions on the values of the
+variables, and behavior can be represented by changes in the values
+of the variables.
+</p>
+
+<p>
+We need to represent the variables (etc.) in some convenient notation
+that has a clear meaning. In this exercise we will use fragments of
+the C programming language (which is similar to Java, Perl, and other
+popular languages).  However, we are not writing a program here.
+Instead, we are using the notation to model and analyze a system.
+We're modelling the whole system, so the variables need not be
+variables in a computer program.  They can represent quantities or
+situations in the world outside the computer.  Moreover, we're modelling
+the system at an abstract level so we can leave out a lot of the
+details you would have to put in to make a program work.
+</p>
+
+<p>
+An example should help make this clear.  Consider an electron linear
+accelerator with two modes.  When the operator selects electron mode,
+the beam current is set low and the target is moved out.  When the
+operator selects X-ray mode, the beam current is set high and the
+target is moved in.  The operator can turn the beam on, and the beam
+turns off when various events occur.  This system can be represented
+by three state variables.  In C they can be declared like this:
+</p>
+     
+<pre>
+    enum current_t { low, high } current;
+    enum target_t { in, out } target;
+    enum beam_t { off, on } beam;
+</pre>
+
+<p>
+The first declaration declares a variable named <code>current</code> that
+can take on the values <code>low</code> and <code>high</code>
+(<code>current_t</code> is not the variable, it is required by C syntax
+but we can ignore it).
+</p>
+
+<p>
+<b>Exercise:</b> Why did we not include another state variable to 
+represent the mode (X-ray or electron)?
+</p>
+
+<p>
+We can describe a state by writing a boolean function that returns
+true when the system is in that state (we can use the name of the
+function as the name of the state).  For example this function
+describes the state where the beam is on in electron mode: the current
+is low, the target is out, and the beam is on:
+</p>
+
+<pre>
+    boolean electron_beam(void) {
+        return (current == low && target == out && beam == on);
+    }
+</pre>
+
+<p>
+Here <code>==</code> is the equality operator and <code>&&</code> is
+the logical <em>and</em> operator.  Don't worry about
+<code>void</code>, C syntax requires it.
+</p>
+
+<p>
+A state function is a boolean function whose return value depends only
+on state variables.  The preceding state function describes just one
+state but we can also describe sets of states.
+</p>
+
+<p>
+<b>Exercise:</b> Here is another state function for this system.  How
+many distinct states does it describe?  What are they?
+</p>
+
+<pre>
+    boolean electron_mode(void) {
+        return (current == low && target == out);
+    }
+</pre>
+
+<p>
+<b>Exercise:</b>  Write the <code>xray_mode</code> state function.
+</p>
+
+<p>
+Remember we are using these functions to name and describe states for
+purposes of modelling and analysis.  We're not going to write any main
+program that calls these functions.
+</p>
+
+<h3>State transitions</h3>
+
+<p>
+We represent dynamics by writing <em>state transitions</em> where the
+values of variables change.  We model state transitions (and give them
+names) by writing C functions.  This function describes the transition
+where the operator selects electron mode:
+</p>
+
+<pre>
+    void select_electron_mode(void) {
+         if (beam == off) {
+             current = low; target = out;
+         }
+    }
+</pre>
+
+<p>
+Each state transition has this form.  First there is an
+<code>if</code> statement that tests a boolean expression on the
+system state called the <em>guard</em>.  If the guard is true, the
+system executes the body of the <code>if</code>, which is always a
+sequence of assignments that change the values of some of the state
+variables.  After the transition completes, those variables have their
+new values and the values of any other variables remain unchanged.  If
+the guard is false, the values of all the variables remain unchanged
+(no transition occurs).
+</p>
+
+<p>
+We're not going to write any main program that calls the transition
+functions.  Instead we're going to assume the system behaves as
+follows. A transition whose guard is true is <em>enabled</em>.  If a
+transition is enabled, the system executes it.  Several transitions
+may be enabled at the same time; in that case the next transition is
+selected <em>nondeterministically</em> (at random).  Each transition
+is <em>atomic</em>: once begun, it runs to completion without
+interruption -- there are no "in-between" states.
+</p>
+
+<p>
+It turns out that this simple scheme is quite expressive and can model
+many interesting systems, including most computations.  Note that all
+the control structure is encoded in the guards.
+</p>
+
+<p>
+<b>Exercise:</b> Write the <code>select_xray_mode</code> transition.
+</p>
+
+<h3>Safety and invariants</h3>
+
+<p>
+An essential task in the design of any safety-critical system is to
+identify the safe states.  A system is safe if it is always in a safe
+state (it never enters an unsafe state).  Safe states can be
+represented by state functions.  A state function that is intended to
+return true in every state that the system can reach is called an
+<em>invariant</em> (its truth never varies).  Safety requirements can
+be represented by invariants.  A system which is always in a safe
+state is said to satisfy its safety invariant.  A system which can
+reach a state where the safety invariant is false is said to violate
+the invariant --- it can enter an unsafe state.
+</p>
+
+<p>
+The electron accelerator is unsafe if the beam is on while the current
+is high but the target is out, because in this state the dose rate is
+much too large.
+</p>
+
+<p>
+<b>Exercise:</b> Write the safety invariant
+<code>safe_mode</code>.  You may use the
+<code>electron_mode</code> and <code>xray_mode</code> state functions
+defined previously.  Hint: use the logical <em>or</em> operator <code>||</code>
+to combine separate cases.
+</p>
+
+<h3>Safety analysis</h3>
+
+<p>
+To perform a safety analysis, check whether it is possible for the system
+to violate its safety invariant.  To do this you must know the initial
+state, all the transitions, and the safety invariant.
+</p>
+
+<p>
+We add these transitions to our system:
+</p>
+
+<pre>
+    void beam_on(void) {  if (beam == off) beam = on; }
+
+    void beam_off(void) { if (beam == on) beam = off; }
+</pre>
+
+<p>
+Assume the system starts up in the <code>electron_mode</code> state
+with <code>beam = off</code>.
+</p>
+
+<p>
+<b>Exercise:</b> Does this system satisfy its safety invariant?  Why?
+</p>
+
+<p>
+We add these transitions to our system:
+</p>
+
+<pre>
+    void target_in { if (beam == off) target = in; }
+
+    void target_out { if (beam == off) target = out; }
+</pre>
+
+<p>
+<b>Exercise:</b> Does the system satisfy the invariant now?  Why?
+</p>
+
+<h3>Automation</h3>
+
+<p>
+Imagine a program the could do the safety analysis automatically.
+Given a set of transitions, a safety invariant, and an initial state,
+the program reports whether the invariant can be violated, and if so,
+it shows how.
+</p>
+
+<p>
+<b>Exercise:</b> Would this be possible for our example?  Is it
+possible in general?
+</p>
+
+<hr>
+
+<h3>Homework</h3>
+
+<p>
+Let's extend the model to make it a bit more realistic.  We'll add a
+dosimetry system.  The accelerator operator can enter a preset dose.
+The accelerator control system monitors the dose that accumulates
+while the beam is on.  The accumulated dose must not exceed the preset
+dose, except for a small tolerance.  When the beam is on and the
+accumulated dose reaches the preset dose, the beam turns off (the beam
+may still turn off for other reasons before the preset dose is
+reached).  The operator can reset the accumulated dose back to zero
+when the beam is off.  For simplicity we'll assume the preset and
+accumulated doses are always whole numbers (integers) whose values are
+zero or greater, and the tolerance is a small positive integer greater
+than zero.  We can declare the new state variables this way (where /*
+... */ delimits a comment).
+</p>
+
+<pre>
+    int dose;    /* accumulated dose */
+    int preset;  /* preset dose */
+    int tol;     /* small constant tolerance by which dose may exceed preset */
+</pre>
+
+<p>
+Write up and hand in your solution to the following homework
+exercises.  Don't worry about programming language syntax.  You may
+write your solutions in some language other than C or even in
+pseudocode if you prefer.
+</p>
+
+<p>
+<b>Exercise 1:</b> Write the safety invariant <code>safe_dose</code>
+to express that the accumulated dose must not exceed the preset dose,
+except for a small tolerance.
+</p>
+
+<p>
+<b>Exercise 2:</b> Write the system safety invariant
+<code>safe_accelerator</code> that expresses all the safety
+requirements in both <code>safe_mode</code> and
+<code>safe_dose</code>.
+</p>
+
+<p>
+<b>Exercise 3:</b> Write the state transition <code>beam_off_dosim</code>
+to express that the beam turns off when the accumulated dose reaches or
+exceeds the preset dose.
+</p>
+
+<p>
+<b>Exercise 4:</b> Write the state transition <code>deliver_dose</code>
+to express that the accumulated dose increases by the constant
+amount <code>delta</code> during each unit of time that the beam is
+on (where a time unit is the smallest interval that the system can resolve).
+<b>Hint:</b> This is easy.  You do not need any new variables,
+other than <code>delta</code>.  Note that this transition will usually
+occur many times each time the beam is on.
+</p>
+
+<p>
+<b>Exercise 5:</b> Consider the system comprising all the items
+defined previously, except the potentially unsafe transitions
+<code>target_in</code> and <code>target_out</code> are not included.
+The system is initialized in <code>electron_mode</code> with
+<code>beam = off</code> and <code>preset</code> and <code>dose</code>
+initialized to any values that satisfy <code>safe_dose</code>.  Does
+this system satisfy the system safety invariant?  If not, describe
+what can go wrong, using the variable names and other terminology of
+the model.
+</p>
+
+<p>
+Something to think about (not to hand in): Exercise 4 
+describes a constant dose rate.  It would be more realistic to 
+say the prescribed dose increases by <em>at most</em> <code>delta</code>
+during each time unit.  Can we express this in our programming language
+notation?  If not, how could the notation be extended?
+</p>
+
+
+<hr>
+
+<p>
+We ran out of time so I didn't have time to explain that there are
+whole technologies devoted to writing and analyzing models like this.
+They are examples of <a href="http://www.afm.sbu.ac.uk/">formal
+methods</a>.  They include the modelling notations 
+<a href="http://sdg.lcs.mit.edu/alloy/">Alloy</a>, 
+<a href="http://research.microsoft.com/fse/#AsmL">ASM</a>,
+<a href="http://research.microsoft.com/users/lamport/tla/tla.html">TLA</a>, 
+<a href="http://www.cs.utexas.edu/users/psp/welcome.html#unitysec">Unity</a>, 
+<a href="http://www.csr.ncl.ac.uk/vdm/">VDM</a>, 
+and
+<a href="http://www.afm.sbu.ac.uk/z/">Z</a>
+(also <a href="http://staff.washington.edu/~jon/z/z-examples.html">here</a>),
+the theorem provers 
+<a href="http://www.cs.utexas.edu/users/moore/acl2/">ACL2</a>, 
+<a href="http://pvs.csl.sri.com/">PVS</a>, 
+and
+<a href="http://www.ora.on.ca/z-eves/">Z/EVES</a>, 
+and the model-checkers
+<a href="http://www.cs.cmu.edu/~modelcheck/">SMV</a>
+(also <a href="http://nusmv.irst.itc.it/">here</a>), 
+<a href="http://cm.bell-labs.com/cm/cs/what/spin/">Spin</a>, 
+and 
+<a href="http://sdg.lcs.mit.edu/alloy/">Alloy</a>
+again.
+</p>
+
+<hr>
+
+<a href="index.html">Jonathan Jacky</a>, <em class="email">jon@u.washington.edu</em>
+
+</body>
+</html>
